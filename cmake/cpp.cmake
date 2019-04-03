@@ -1,7 +1,27 @@
-include(utils)
-set_version(VERSION)
-project(ortools LANGUAGES CXX VERSION ${VERSION})
-message(STATUS "ortools version: ${PROJECT_VERSION}")
+if(NOT BUILD_CXX)
+  return()
+endif()
+
+# Check dependencies
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREAD_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
+find_package(ZLIB REQUIRED)
+find_package(absl REQUIRED CONFIG)
+find_package(gflags REQUIRED CONFIG)
+find_package(glog REQUIRED CONFIG)
+find_package(Protobuf REQUIRED CONFIG)
+find_package(CoinUtils REQUIRED CONFIG)
+find_package(Osi REQUIRED CONFIG)
+find_package(Clp REQUIRED CONFIG)
+find_package(Cgl REQUIRED CONFIG)
+find_package(Cbc REQUIRED CONFIG)
+
+# If wrapper are built, we need to have the install rpath in BINARY_DIR to package
+if(BUILD_PYTHON OR BUILD_JAVA OR BUILD_DOTNET)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
 
 # config options
 if(MSVC)
@@ -44,25 +64,30 @@ else()
 endif()
 add_definitions(-DUSE_GLOP -DUSE_BOP -DUSE_CBC -DUSE_CLP)
 
-# Verify Dependencies
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
-
 # Main Target
 add_library(${PROJECT_NAME} "")
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
+
+if(CMAKE_VERSION VERSION_LESS "3.8.2")
+  set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+  )
+else()
+  target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+endif()
+
 if(NOT APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 else()
   # Clang don't support version x.y.z with z > 255
   set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
 endif()
-set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 11)
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
-set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-set_target_properties(${PROJECT_NAME} PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  POSITION_INDEPENDENT_CODE ON
+  INTERFACE_POSITION_INDEPENDENT_CODE ON
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES INTERFACE_${PROJECT_NAME}_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION)
 if(APPLE)
@@ -160,6 +185,10 @@ foreach(SUBPROJECT
   target_sources(${PROJECT_NAME} PRIVATE $<TARGET_OBJECTS:${PROJECT_NAME}::${SUBPROJECT}>)
   add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}::${SUBPROJECT})
 endforeach()
+
+if(BUILD_TESTING)
+  add_subdirectory(examples/cpp)
+endif()
 
 # Install rules
 include(GNUInstallDirs)
