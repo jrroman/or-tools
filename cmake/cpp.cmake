@@ -112,7 +112,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   absl::strings
   absl::synchronization
   absl::any
-  gflags::gflags
+  gflags::gflags_static
   glog::glog
   protobuf::libprotobuf
   Coin::CbcSolver Coin::OsiCbc Coin::ClpSolver Coin::OsiClp
