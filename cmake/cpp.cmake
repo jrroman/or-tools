@@ -135,7 +135,7 @@ file(GLOB_RECURSE proto_files RELATIVE ${PROJECT_SOURCE_DIR} "ortools/*.proto")
 get_target_property(protobuf_dirs protobuf::libprotobuf INTERFACE_INCLUDE_DIRECTORIES)
 foreach(dir ${protobuf_dirs})
   if ("${dir}" MATCHES "BUILD_INTERFACE")
-    list(APPEND PROTO_DIRS "--proto_path=${dir}")
+    list(APPEND PROTO_DIRS "\"--proto_path=${dir}\"")
   endif()
 endforeach()
 
@@ -151,7 +151,7 @@ foreach (PROTO_FILE ${proto_files})
     OUTPUT ${PROTO_SRC} ${PROTO_HDR}
     COMMAND protobuf::protoc
     "--proto_path=${PROJECT_SOURCE_DIR}"
-    "${PROTO_DIRS}"
+    ${PROTO_DIRS}
     "--cpp_out=${PROJECT_BINARY_DIR}"
     ${PROTO_FILE}
     DEPENDS ${PROTO_FILE} protobuf::protoc
