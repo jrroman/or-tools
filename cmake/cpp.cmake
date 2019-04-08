@@ -9,6 +9,7 @@ find_package(Threads REQUIRED)
 
 find_package(ZLIB REQUIRED)
 find_package(absl REQUIRED CONFIG)
+set(GFLAGS_USE_TARGET_NAMESPACE TRUE)
 find_package(gflags REQUIRED CONFIG)
 find_package(glog REQUIRED CONFIG)
 find_package(Protobuf REQUIRED CONFIG)
@@ -111,9 +112,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   absl::strings
   absl::synchronization
   absl::any
-  gflags::gflags glog::glog
+  gflags::gflags
+  glog::glog
   protobuf::libprotobuf
-  Cbc::CbcSolver Cbc::OsiCbc Cbc::ClpSolver Cbc::OsiClp
+  Coin::CbcSolver Coin::OsiCbc Coin::ClpSolver Coin::OsiClp
   Threads::Threads)
 if(WIN32)
 	target_link_libraries(${PROJECT_NAME} PUBLIC psapi.lib ws2_32.lib)

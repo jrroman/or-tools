@@ -24,7 +24,7 @@ if(WIN32 AND (BUILD_PYTHON OR BUILD_JAVA OR BUILD_DOTNET))
   endif()
   message(STATUS "Getting SWIG: ...DONE")
 
-  set(SWIG_EXECUTABLE ${CMAKE_BINARY_DIR}/SWIG/source/swig.exe
+  set(SWIG_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/SWIG/source/swig.exe
     CACHE INTERNAL "swig.exe location" FORCE)
 endif()
 
